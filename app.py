@@ -80,31 +80,41 @@ def load_data():
     df.columns = df.columns.str.strip()
     return df
 
-def build_team_features(player_names, df, feature_names):
+def build_team_features(player_names, df, team_label, feature_names):
     team_df = df[df["Name"].isin(player_names)]
-    agg_features = team_df.mean(numeric_only=True)
+    
+    # Aggregate stats
+    agg_features = {}
+    if not team_df.empty:
+        agg_features = {
+            f"{team_label}_reb": team_df["REB"].sum(),
+            f"{team_label}_ast": team_df["AST"].sum(),
+            f"{team_label}_stl": team_df["STL"].sum(),
+            f"{team_label}_blk": team_df["BLK"].sum(),
+            f"{team_label}_to":  team_df["TO"].sum(),
+            f"{team_label}_fg%": team_df["FG%"].mean(),
+            f"{team_label}_3p%": team_df["3P%"].mean(),
+            f"{team_label}_ft%": team_df["FT%"].mean()
+        }
+    
+    # Convert to Series and align with model features
+    agg_series = pd.Series(agg_features)
+    agg_series = agg_series.reindex(feature_names, fill_value=0)
+    return agg_series
 
-    # Keep only the features the model was trained on
-    agg_features = agg_features.reindex(feature_names, fill_value=0)
-    return agg_features
 
 def simulate_matchup(teamA, teamB, df, model, feature_names):
-    teamA_features = build_team_features(teamA, df, feature_names)
-    teamB_features = build_team_features(teamB, df, feature_names)
+    # Build features for Team A and Team B
+    teamA_features = build_team_features(teamA, df, "TeamA", feature_names)
+    teamB_features = build_team_features(teamB, df, "TeamB", feature_names)
 
-    matchup_features = (teamA_features.values - teamB_features.values).reshape(1, -1)
-    matchup_df = pd.DataFrame(matchup_features, columns=feature_names)
-
-    # 🔍 Debugging output
-    st.write("✅ Feature Names:", feature_names)
-    st.write("✅ Matchup Features (first row):", matchup_df.iloc[0].to_dict())
+    # Combine into one row
+    matchup_features = pd.concat([teamA_features, teamB_features])
+    matchup_df = matchup_features.to_frame().T  # shape (1, n_features)
 
     prob = model.predict_proba(matchup_df)[0]
-
-    # 🔍 Show raw probability from the model
-    st.write("✅ Raw Predicted Probabilities:", prob)
-
     return prob
+
 
 
 
@@ -131,9 +141,9 @@ def get_player_stats(player_names, df):
 st.markdown('<h1 class="main-header">🏀 NBA Dream Team Matchup Simulator</h1>', unsafe_allow_html=True)
 
 # Load data
-# Load data
 df = load_data()
-players = sorted(df["Name"].unique())  # Sort players alphabetically
+# model, feature_names already loaded at the top
+
 
 # Sidebar with improved organization
 with st.sidebar:
@@ -321,6 +331,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

@@ -21,12 +21,7 @@ st.markdown("""
         text-align: center;
         margin-bottom: 2rem;
     }
-    .team-card {
-        background-color: #f8f9fa;
-        border-radius: 10px;
-        padding: 1.5rem;
-        border-left: 4px solid #1e3a8a;
-        margin-bottom: 1rem;
+
     }
     .probability-card {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -332,6 +327,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

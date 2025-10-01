@@ -142,6 +142,8 @@ st.markdown('<h1 class="main-header">🏀 NBA Dream Team Matchup Simulator</h1>'
 
 # Load data
 df = load_data()
+players = sorted(df["Name"].unique())  # Sort players alphabetically
+
 # model, feature_names already loaded at the top
 
 
@@ -331,6 +333,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

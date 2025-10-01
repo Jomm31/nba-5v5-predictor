@@ -106,7 +106,7 @@ def simulate_matchup(teamA, teamB, df, model, feature_names):
     matchup_df = pd.DataFrame([all_features], columns=feature_names)
 
     # 🔍 Debugging output
-    st.write("🔎 Label balance in training:", df['Win'].value_counts())
+
 
 
     # Predict
@@ -336,7 +336,7 @@ st.markdown(
 )
 
 
-
+st.write("🔎 Label balance in training:", df['Win'].value_counts())
 
 
 

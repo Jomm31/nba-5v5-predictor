@@ -29,7 +29,7 @@ def load_data():
 
 # Aggregate player stats into team features
 def build_team_features(player_names, df):
-    team_df = df[df["Player"].isin(player_names)]
+    team_df = df[df["Name"].isin(player_names)]
     # Aggregate stats (mean or sum depending on feature)
     agg_features = team_df.mean(numeric_only=True)
     return agg_features
@@ -53,7 +53,7 @@ st.title("🏀 NBA Dream Team Matchup Simulator")
 df = load_data()
 model = load_model()
 
-players = df["Player"].unique()
+players = df["Name"].unique()
 
 
 st.sidebar.header("Select Players")
@@ -72,6 +72,7 @@ if len(teamA) == 5 and len(teamB) == 5:
     st.bar_chart({"Team A": prob[1], "Team B": prob[0]})
 else:
     st.info("Select 5 players for each team to simulate a matchup.")
+
 
 
 

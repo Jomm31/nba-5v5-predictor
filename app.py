@@ -336,7 +336,8 @@ st.markdown(
 )
 
 
-st.write("🔎 Label balance in training:", df['Win'].value_counts())
+
+
 
 
 

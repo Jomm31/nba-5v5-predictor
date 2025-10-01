@@ -108,15 +108,15 @@ def simulate_matchup(teamA, teamB, df, model, feature_names):
     teamA_features = build_team_features(teamA, df, "TeamA", feature_names)
     teamB_features = build_team_features(teamB, df, "TeamB", feature_names)
 
-    # Combine into one row
-    matchup_features = pd.concat([teamA_features, teamB_features])
-    matchup_df = matchup_features.to_frame().T  
+    # Merge into one dict
+    all_features = pd.concat([teamA_features, teamB_features])
 
-    # 🔑 Reorder columns to match training exactly
-    matchup_df = matchup_df[feature_names]
+    # Create single-row dataframe in the exact training order
+    matchup_df = all_features.reindex(feature_names).to_frame().T
 
     prob = model.predict_proba(matchup_df)[0]
     return prob
+
 
 
 
@@ -336,6 +336,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

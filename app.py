@@ -3,7 +3,6 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import joblib
-from streamlit_extras.card import card
 
 # Page configuration
 st.set_page_config(
@@ -38,15 +37,31 @@ st.markdown("""
         margin: 1rem 0;
     }
     .player-tag {
-        background-color: #e2e8f0;
-        padding: 0.3rem 0.8rem;
+        background-color: #1e3a8a;
+        color: white !important;
+        padding: 0.5rem 1rem;
         border-radius: 20px;
-        margin: 0.2rem;
+        margin: 0.3rem;
         display: inline-block;
         font-size: 0.9rem;
+        font-weight: 500;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    .player-tag:hover {
+        background-color: #2d4a9a;
+        transform: translateY(-1px);
+        transition: all 0.2s ease;
     }
     .stProgress > div > div > div > div {
         background-color: #1e3a8a;
+    }
+    /* Fix for multiselect text color */
+    .stMultiSelect [data-baseweb="tag"] {
+        background-color: #1e3a8a;
+        color: white;
+    }
+    .stMultiSelect [data-baseweb="tag"] span {
+        color: white !important;
     }
 </style>
 """, unsafe_allow_html=True)
@@ -87,7 +102,18 @@ def simulate_matchup(teamA, teamB, df, model):
 
 def get_player_stats(player_names, df):
     """Get key stats for selected players"""
-    stats = df[df["Name"].isin(player_names)][["Name", "PTS", "AST", "REB", "STL", "BLK"]].set_index("Name")
+    # Check if REB column exists, if not try TRB (Total Rebounds)
+    stat_columns = ["Name", "PTS", "AST", "STL", "BLK"]
+    
+    # Add rebounds column (try different common names)
+    if "REB" in df.columns:
+        stat_columns.append("REB")
+    elif "TRB" in df.columns:
+        stat_columns.append("TRB")
+    elif "Rebounds" in df.columns:
+        stat_columns.append("Rebounds")
+    
+    stats = df[df["Name"].isin(player_names)][stat_columns].set_index("Name")
     return stats
 
 # --- Improved Streamlit UI ---
@@ -96,7 +122,7 @@ st.markdown('<h1 class="main-header">🏀 NBA Dream Team Matchup Simulator</h1>'
 # Load data
 df = load_data()
 model = load_model()
-players = df["Name"].unique()
+players = sorted(df["Name"].unique())  # Sort players alphabetically
 
 # Sidebar with improved organization
 with st.sidebar:
@@ -107,7 +133,8 @@ with st.sidebar:
         "Select 5 players for Team A", 
         players, 
         key="teamA",
-        help="Choose 5 players to form Team A"
+        help="Choose 5 players to form Team A",
+        max_selections=5
     )
     
     st.subheader("Team B") 
@@ -115,17 +142,23 @@ with st.sidebar:
         "Select 5 players for Team B", 
         players, 
         key="teamB",
-        help="Choose 5 players to form Team B"
+        help="Choose 5 players to form Team B",
+        max_selections=5
     )
     
-    # Team validation
+    # Team validation with better messaging
     if len(teamA) > 5:
-        st.warning("⚠️ Team A can only have 5 players. Removing extras.")
-        teamA = teamA[:5]
+        st.warning("⚠️ Team A can only have 5 players. Please remove extras.")
     
     if len(teamB) > 5:
-        st.warning("⚠️ Team B can only have 5 players. Removing extras.")
-        teamB = teamB[:5]
+        st.warning("⚠️ Team B can only have 5 players. Please remove extras.")
+    
+    # Show current team counts
+    col1, col2 = st.columns(2)
+    with col1:
+        st.metric("Team A Players", f"{len(teamA)}/5")
+    with col2:
+        st.metric("Team B Players", f"{len(teamB)}/5")
 
 # Main content area
 col1, col2 = st.columns([1, 1])
@@ -134,20 +167,22 @@ with col1:
     st.markdown('<div class="team-card">', unsafe_allow_html=True)
     st.subheader("👑 Team A")
     if teamA:
+        st.write("**Selected Players:**")
         for player in teamA:
             st.markdown(f'<span class="player-tag">{player}</span>', unsafe_allow_html=True)
     else:
-        st.info("Select players from the sidebar")
+        st.info("Select players from the sidebar to build Team A")
     st.markdown('</div>', unsafe_allow_html=True)
 
 with col2:
     st.markdown('<div class="team-card">', unsafe_allow_html=True)
     st.subheader("⚡ Team B")
     if teamB:
+        st.write("**Selected Players:**")
         for player in teamB:
             st.markdown(f'<span class="player-tag">{player}</span>', unsafe_allow_html=True)
     else:
-        st.info("Select players from the sidebar")
+        st.info("Select players from the sidebar to build Team B")
     st.markdown('</div>', unsafe_allow_html=True)
 
 # Simulation and Results
@@ -155,11 +190,12 @@ if len(teamA) == 5 and len(teamB) == 5:
     st.markdown("---")
     
     # Add a simulate button for better UX
-    if st.button("🚀 Simulate Matchup", use_container_width=True):
-        with st.spinner("Simulating matchup... This may take a few seconds."):
+    if st.button("🚀 Simulate Matchup", use_container_width=True, type="primary"):
+        with st.spinner("🏀 Simulating matchup... Analyzing player stats and predicting outcome..."):
             prob = simulate_matchup(teamA, teamB, df, model)
             
             # Results in columns
+            st.subheader("🎯 Matchup Results")
             col1, col2, col3 = st.columns([2, 1, 2])
             
             with col1:
@@ -167,14 +203,14 @@ if len(teamA) == 5 and len(teamB) == 5:
                 st.metric(
                     label="Team A Win Probability", 
                     value=f"{prob[1]*100:.1f}%",
-                    delta=f"+{prob[1]*100 - 50:.1f}%" if prob[1] > 0.5 else None
+                    delta=f"+{prob[1]*100 - 50:.1f}%" if prob[1] > 0.5 else f"{prob[1]*100 - 50:.1f}%"
                 )
                 st.progress(prob[1])
                 st.markdown('</div>', unsafe_allow_html=True)
             
             with col2:
                 st.markdown("<br><br>", unsafe_allow_html=True)
-                st.subheader("VS")
+                st.markdown("<h2 style='text-align: center; color: #666;'>VS</h2>", unsafe_allow_html=True)
                 st.markdown("<br>", unsafe_allow_html=True)
             
             with col3:
@@ -182,7 +218,7 @@ if len(teamA) == 5 and len(teamB) == 5:
                 st.metric(
                     label="Team B Win Probability", 
                     value=f"{prob[0]*100:.1f}%",
-                    delta=f"+{prob[0]*100 - 50:.1f}%" if prob[0] > 0.5 else None
+                    delta=f"+{prob[0]*100 - 50:.1f}%" if prob[0] > 0.5 else f"{prob[0]*100 - 50:.1f}%"
                 )
                 st.progress(prob[0])
                 st.markdown('</div>', unsafe_allow_html=True)
@@ -203,53 +239,72 @@ if len(teamA) == 5 and len(teamB) == 5:
             with viz_col2:
                 # Pie chart
                 fig, ax = plt.subplots(figsize=(6, 6))
+                colors = ['#FF6B6B', '#4ECDC4']
                 ax.pie([prob[1], prob[0]], 
                       labels=['Team A', 'Team B'], 
                       autopct='%1.1f%%',
-                      colors=['#FF6B6B', '#4ECDC4'],
-                      startangle=90)
-                ax.set_title('Win Probability Distribution')
+                      colors=colors,
+                      startangle=90,
+                      textprops={'fontsize': 12})
+                ax.set_title('Win Probability Distribution', fontsize=14, fontweight='bold')
                 st.pyplot(fig)
             
             # Team stats comparison
             st.subheader("📈 Team Stats Comparison")
-            teamA_stats = get_player_stats(teamA, df)
-            teamB_stats = get_player_stats(teamB, df)
-            
-            avgA = teamA_stats.mean()
-            avgB = teamB_stats.mean()
-            
-            stats_comparison = pd.DataFrame({
-                'Stat': ['Points', 'Assists', 'Rebounds', 'Steals', 'Blocks'],
-                'Team A': avgA.values,
-                'Team B': avgB.values
-            })
-            
-            st.dataframe(stats_comparison, use_container_width=True, hide_index=True)
+            try:
+                teamA_stats = get_player_stats(teamA, df)
+                teamB_stats = get_player_stats(teamB, df)
+                
+                avgA = teamA_stats.mean()
+                avgB = teamB_stats.mean()
+                
+                # Create readable stat names
+                stat_names = []
+                for col in teamA_stats.columns:
+                    if col == 'PTS': stat_names.append('Points')
+                    elif col == 'AST': stat_names.append('Assists')
+                    elif col in ['REB', 'TRB', 'Rebounds']: stat_names.append('Rebounds')
+                    elif col == 'STL': stat_names.append('Steals')
+                    elif col == 'BLK': stat_names.append('Blocks')
+                    else: stat_names.append(col)
+                
+                stats_comparison = pd.DataFrame({
+                    'Stat': stat_names,
+                    'Team A': [f"{val:.1f}" for val in avgA.values],
+                    'Team B': [f"{val:.1f}" for val in avgB.values]
+                })
+                
+                st.dataframe(stats_comparison, use_container_width=True, hide_index=True)
+            except Exception as e:
+                st.warning(f"Could not load detailed stats: {e}")
             
     else:
         st.info("👆 Click the button above to simulate the matchup!")
         
 else:
     st.markdown("---")
+    # More helpful messaging when teams aren't complete
     if len(teamA) != 5 or len(teamB) != 5:
+        st.info("🎯 **Build Your Teams**: Select 5 players for each team to unlock matchup simulation")
+        
         col1, col2 = st.columns(2)
         with col1:
-            if len(teamA) != 5:
+            if len(teamA) < 5:
                 st.warning(f"Team A needs {5 - len(teamA)} more player(s)")
+            elif len(teamA) == 5:
+                st.success("✅ Team A is ready!")
+                
         with col2:
-            if len(teamB) != 5:
+            if len(teamB) < 5:
                 st.warning(f"Team B needs {5 - len(teamB)} more player(s)")
-    
-    # Placeholder for when teams aren't complete
-    st.info("🎯 Select 5 players for each team to unlock matchup simulation")
+            elif len(teamB) == 5:
+                st.success("✅ Team B is ready!")
 
 # Footer
 st.markdown("---")
 st.markdown(
-    "<div style='text-align: center; color: gray;'>"
+    "<div style='text-align: center; color: gray; font-size: 0.9rem;'>"
     "Built with Streamlit • NBA Dream Team Simulator"
     "</div>",
     unsafe_allow_html=True
 )
-

@@ -20,6 +20,9 @@ def load_model():
 @st.cache_data
 def load_data():
     df = pd.read_csv("NBA_Player_Stats.csv", sep="\t")  # use tab separator
+    df.columns = df.columns.str.strip()
+
+    st.write("🔍 Columns detected:", df.columns.tolist())
     return df
 
 
@@ -70,6 +73,7 @@ if len(teamA) == 5 and len(teamB) == 5:
     st.bar_chart({"Team A": prob[1], "Team B": prob[0]})
 else:
     st.info("Select 5 players for each team to simulate a matchup.")
+
 
 
 

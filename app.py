@@ -7,8 +7,12 @@ import joblib
 
 @st.cache_resource
 def load_model():
-    model = joblib.load("random_forest_matchup_model.joblib")
-    return model
+    try:
+        model = joblib.load("random_forest_matchup_model.joblib")
+        return model
+    except FileNotFoundError:
+        st.error("❌ Model file `random_forest_matchup_model.joblib` not found. Please add it to the repo root.")
+        st.stop()
 
 
 
@@ -64,4 +68,5 @@ if len(teamA) == 5 and len(teamB) == 5:
     st.bar_chart({"Team A": prob[1], "Team B": prob[0]})
 else:
     st.info("Select 5 players for each team to simulate a matchup.")
+
 

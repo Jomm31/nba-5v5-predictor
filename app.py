@@ -80,10 +80,9 @@ def load_data():
     df.columns = df.columns.str.strip()
     return df
 
-def build_team_features(player_names, df, team_label, feature_names):
+def build_team_features(player_names, df, team_label):
     team_df = df[df["Name"].isin(player_names)]
     
-    # Aggregate stats
     agg_features = {}
     if not team_df.empty:
         agg_features = {
@@ -96,22 +95,19 @@ def build_team_features(player_names, df, team_label, feature_names):
             f"{team_label}_3p%": team_df["3P%"].mean(),
             f"{team_label}_ft%": team_df["FT%"].mean()
         }
-    
-    # Convert to Series and align with model features
-    agg_series = pd.Series(agg_features)
-    agg_series = agg_series.reindex(feature_names, fill_value=0)
-    return agg_series
+    return pd.Series(agg_features)
+
 
 
 def simulate_matchup(teamA, teamB, df, model, feature_names):
-    # Build features for Team A and Team B
-    teamA_features = build_team_features(teamA, df, "TeamA", feature_names)
-    teamB_features = build_team_features(teamB, df, "TeamB", feature_names)
+    # Build each team’s features
+    teamA_features = build_team_features(teamA, df, "TeamA")
+    teamB_features = build_team_features(teamB, df, "TeamB")
 
     # Merge into one dict
     all_features = pd.concat([teamA_features, teamB_features])
 
-    # Create single-row dataframe in the exact training order
+    # Reindex ONCE to match model’s training columns
     matchup_df = all_features.reindex(feature_names).to_frame().T
 
     prob = model.predict_proba(matchup_df)[0]
@@ -336,6 +332,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

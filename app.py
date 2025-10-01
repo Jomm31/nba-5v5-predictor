@@ -39,13 +39,17 @@ def simulate_matchup(teamA, teamB, df, model):
     teamA_features = build_team_features(teamA, df)
     teamB_features = build_team_features(teamB, df)
 
-    # Combine features into one row
+    # Drop PTS to match training
+    if "PTS" in teamA_features.index:
+        teamA_features = teamA_features.drop("PTS")
+        teamB_features = teamB_features.drop("PTS")
+
     matchup_features = teamA_features.values - teamB_features.values
     matchup_features = matchup_features.reshape(1, -1)
 
-    # Predict probability
     prob = model.predict_proba(matchup_features)[0]
     return prob
+
 
 # --- Streamlit UI ---
 st.title("🏀 NBA Dream Team Matchup Simulator")
@@ -72,6 +76,7 @@ if len(teamA) == 5 and len(teamB) == 5:
     st.bar_chart({"Team A": prob[1], "Team B": prob[0]})
 else:
     st.info("Select 5 players for each team to simulate a matchup.")
+
 
 
 

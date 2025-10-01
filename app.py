@@ -80,28 +80,24 @@ def load_data():
     df.columns = df.columns.str.strip()
     return df
 
-def build_team_features(player_names, df):
+def build_team_features(player_names, df, feature_names):
     team_df = df[df["Name"].isin(player_names)]
     agg_features = team_df.mean(numeric_only=True)
+
+    # Keep only the features the model was trained on
+    agg_features = agg_features.reindex(feature_names, fill_value=0)
     return agg_features
 
-def simulate_matchup(teamA, teamB, df, model, feature_names=None):
-    teamA_features = build_team_features(teamA, df)
-    teamB_features = build_team_features(teamB, df)
-
-    if "PTS" in teamA_features.index:
-        teamA_features = teamA_features.drop("PTS")
-        teamB_features = teamB_features.drop("PTS")
+def simulate_matchup(teamA, teamB, df, model, feature_names):
+    teamA_features = build_team_features(teamA, df, feature_names)
+    teamB_features = build_team_features(teamB, df, feature_names)
 
     matchup_features = (teamA_features.values - teamB_features.values).reshape(1, -1)
-
-    if feature_names is not None:
-        matchup_df = pd.DataFrame(matchup_features, columns=feature_names)
-    else:
-        matchup_df = matchup_features  # fallback
+    matchup_df = pd.DataFrame(matchup_features, columns=feature_names)
 
     prob = model.predict_proba(matchup_df)[0]
     return prob
+
 
 
 
@@ -198,6 +194,7 @@ if len(teamA) == 5 and len(teamB) == 5:
     if st.button("🚀 Simulate Matchup", use_container_width=True, type="primary"):
         with st.spinner("🏀 Simulating matchup... Analyzing player stats and predicting outcome..."):
             prob = simulate_matchup(teamA, teamB, df, model, feature_names)
+
 
             
             # Results in columns
@@ -314,5 +311,6 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 

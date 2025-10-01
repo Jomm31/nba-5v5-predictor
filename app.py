@@ -95,8 +95,17 @@ def simulate_matchup(teamA, teamB, df, model, feature_names):
     matchup_features = (teamA_features.values - teamB_features.values).reshape(1, -1)
     matchup_df = pd.DataFrame(matchup_features, columns=feature_names)
 
+    # 🔍 Debugging output
+    st.write("✅ Feature Names:", feature_names)
+    st.write("✅ Matchup Features (first row):", matchup_df.iloc[0].to_dict())
+
     prob = model.predict_proba(matchup_df)[0]
+
+    # 🔍 Show raw probability from the model
+    st.write("✅ Raw Predicted Probabilities:", prob)
+
     return prob
+
 
 
 
@@ -313,9 +322,8 @@ st.markdown(
     unsafe_allow_html=True
 )
 
-st.write("Feature Names:", feature_names)
-st.write("Matchup Features:", matchup_df)
-st.write("Predicted Probabilities:", prob)
+
+
 
 
 

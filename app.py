@@ -97,6 +97,9 @@ def simulate_matchup(teamA, teamB, df, model, feature_names):
 
     prob = model.predict_proba(matchup_df)[0]
     return prob
+st.write("Feature Names:", feature_names)
+st.write("Matchup Features:", matchup_df)
+st.write("Predicted Probabilities:", prob)
 
 
 
@@ -311,6 +314,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

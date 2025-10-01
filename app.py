@@ -68,12 +68,11 @@ st.markdown("""
 
 @st.cache_resource
 def load_model():
-    try:
-        model = joblib.load("random_forest_matchup_model.joblib")
-        return model
-    except FileNotFoundError:
-        st.error("❌ Model file `random_forest_matchup_model.joblib` not found. Please add it to the repo root.")
-        st.stop()
+    data = joblib.load("random_forest_matchup_model.joblib")
+    return data["model"], data["features"]
+
+model, feature_names = load_model()
+
 
 @st.cache_data
 def load_data():
@@ -86,7 +85,7 @@ def build_team_features(player_names, df):
     agg_features = team_df.mean(numeric_only=True)
     return agg_features
 
-def simulate_matchup(teamA, teamB, df, model):
+def simulate_matchup(teamA, teamB, df, model, feature_names):
     teamA_features = build_team_features(teamA, df)
     teamB_features = build_team_features(teamB, df)
 
@@ -94,11 +93,14 @@ def simulate_matchup(teamA, teamB, df, model):
         teamA_features = teamA_features.drop("PTS")
         teamB_features = teamB_features.drop("PTS")
 
-    matchup_features = teamA_features.values - teamB_features.values
-    matchup_features = matchup_features.reshape(1, -1)
+    matchup_features = (teamA_features.values - teamB_features.values).reshape(1, -1)
 
-    prob = model.predict_proba(matchup_features)[0]
+    # Convert to DataFrame with correct feature names
+    matchup_df = pd.DataFrame(matchup_features, columns=feature_names)
+
+    prob = model.predict_proba(matchup_df)[0]
     return prob
+
 
 def get_player_stats(player_names, df):
     """Get key stats for selected players"""
@@ -308,3 +310,4 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+

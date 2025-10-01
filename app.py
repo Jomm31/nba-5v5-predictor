@@ -87,7 +87,7 @@ def simulate_matchup(teamA, teamB, df, model):
 
 def get_player_stats(player_names, df):
     """Get key stats for selected players"""
-    stats = df[df["Name"].isin(player_names)][["Name", "PTS", "AST", "TRB", "STL", "BLK"]].set_index("Name")
+    stats = df[df["Name"].isin(player_names)][["Name", "PTS", "AST", "REB", "STL", "BLK"]].set_index("Name")
     return stats
 
 # --- Improved Streamlit UI ---
@@ -252,3 +252,4 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+

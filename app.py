@@ -121,8 +121,8 @@ def get_player_stats(player_names, df):
 st.markdown('<h1 class="main-header">🏀 NBA Dream Team Matchup Simulator</h1>', unsafe_allow_html=True)
 
 # Load data
+# Load data
 df = load_data()
-model = load_model()
 players = sorted(df["Name"].unique())  # Sort players alphabetically
 
 # Sidebar with improved organization
@@ -311,6 +311,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

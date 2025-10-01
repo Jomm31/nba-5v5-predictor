@@ -105,9 +105,13 @@ def simulate_matchup(teamA, teamB, df, model, feature_names):
     # Create dataframe in EXACT training column order
     matchup_df = pd.DataFrame([all_features], columns=feature_names)
 
+    # 🔍 Debugging output
+    st.write("🔎 Matchup Features:", matchup_df)
+
     # Predict
     prob = model.predict_proba(matchup_df)[0]
     return prob
+
 
 
 
@@ -329,6 +333,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

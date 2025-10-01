@@ -85,7 +85,7 @@ def build_team_features(player_names, df):
     agg_features = team_df.mean(numeric_only=True)
     return agg_features
 
-def simulate_matchup(teamA, teamB, df, model, feature_names):
+def simulate_matchup(teamA, teamB, df, model, feature_names=None):
     teamA_features = build_team_features(teamA, df)
     teamB_features = build_team_features(teamB, df)
 
@@ -95,11 +95,14 @@ def simulate_matchup(teamA, teamB, df, model, feature_names):
 
     matchup_features = (teamA_features.values - teamB_features.values).reshape(1, -1)
 
-    # Convert to DataFrame with correct feature names
-    matchup_df = pd.DataFrame(matchup_features, columns=feature_names)
+    if feature_names is not None:
+        matchup_df = pd.DataFrame(matchup_features, columns=feature_names)
+    else:
+        matchup_df = matchup_features  # fallback
 
     prob = model.predict_proba(matchup_df)[0]
     return prob
+
 
 
 def get_player_stats(player_names, df):
@@ -194,7 +197,8 @@ if len(teamA) == 5 and len(teamB) == 5:
     # Add a simulate button for better UX
     if st.button("🚀 Simulate Matchup", use_container_width=True, type="primary"):
         with st.spinner("🏀 Simulating matchup... Analyzing player stats and predicting outcome..."):
-            prob = simulate_matchup(teamA, teamB, df, model)
+            prob = simulate_matchup(teamA, teamB, df, model, feature_names)
+
             
             # Results in columns
             st.subheader("🎯 Matchup Results")
@@ -310,4 +314,5 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 

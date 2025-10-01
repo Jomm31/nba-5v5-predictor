@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 # Load data
 @st.cache_data
 def load_data():
-    df = pd.read_csv("NBA_player_stats.csv")  # make sure you export dataset to CSV
+    df = pd.read_csv("NBA_Player_Stats.csv")  # make sure you export dataset to CSV
     return df
 
 # Load trained model
@@ -61,3 +61,4 @@ if len(teamA) == 5 and len(teamB) == 5:
     st.bar_chart({"Team A": prob[1], "Team B": prob[0]})
 else:
     st.info("Select 5 players for each team to simulate a matchup.")
+

@@ -63,7 +63,7 @@ st.markdown("""
 
 @st.cache_resource
 def load_model():
-    data = joblib.load("random_forest_matchup_model.joblib")
+    data = joblib.load("logistic_regression_matchup_model.joblib")
     return data["model"], data["features"]
 
 model, feature_names = load_model()

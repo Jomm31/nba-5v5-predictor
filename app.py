@@ -231,7 +231,7 @@ if len(teamA) == 5 and len(teamB) == 5:
                     value=f"{prob[1]*100:.1f}%",
                     delta=f"+{prob[1]*100 - 50:.1f}%" if prob[1] > 0.5 else f"{prob[1]*100 - 50:.1f}%"
                 )
-                st.progress(prob[1])
+                st.progress(float(prob[1]))
                 st.markdown('</div>', unsafe_allow_html=True)
             
             with col2:
@@ -246,7 +246,7 @@ if len(teamA) == 5 and len(teamB) == 5:
                     value=f"{prob[0]*100:.1f}%",
                     delta=f"+{prob[0]*100 - 50:.1f}%" if prob[0] > 0.5 else f"{prob[0]*100 - 50:.1f}%"
                 )
-                st.progress(prob[0])
+                st.progress(float(prob[0]))
                 st.markdown('</div>', unsafe_allow_html=True)
             
             # Visualization section
@@ -334,6 +334,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 

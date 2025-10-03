@@ -63,7 +63,7 @@ st.markdown("""
 
 @st.cache_resource
 def load_model():
-    data = joblib.load("xgboost_matchup_model.joblib")
+    data = joblib.load("logistic_regression_matchup_model.joblib")
     return data["model"], data["features"]
 
 model, feature_names = load_model()
@@ -334,6 +334,7 @@ st.markdown(
     "</div>",
     unsafe_allow_html=True
 )
+
 
 
 
